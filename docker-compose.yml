@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  database:
+    image: postgres:16
+    container_name: database
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: todo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    
+  frontend:
+    build:
+      context: todolist_frontend
+      dockerfile: ./Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+      - "80:5173"
+
+  backend-auth:
+    build:
+      context: todolist_backend
+      dockerfile: ./Dockerfile-auth
+    container_name: backend-auth
+    restart: always
+    ports:
+      - "5001:5001"
+    depends_on:
+      - database
+    environment:
+      - POSTGRES_URL=postgresql://postgres:password@database:5432/todo_db
+      - JWT_SECRET_KEY=our_jwt_secret_key
+
+  backend-app:
+    build:
+      context: todolist_backend
+      dockerfile: ./Dockerfile-app
+    container_name: backend-app
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - database
+    environment:
+      - POSTGRES_URL=postgresql://postgres:password@database:5432/todo_db
+      - JWT_SECRET_KEY=our_jwt_secret_key

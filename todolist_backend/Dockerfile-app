@@ -1,0 +1,27 @@
+# python dockerfile
+FROM python:3.11-slim-bullseye
+
+# Set the working directory
+WORKDIR /app
+
+# Copy all the files to the container
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libffi-dev \
+    g++ \
+    libssl-dev \
+    libpq-dev  # Add this line to install PostgreSQL development files
+
+COPY requirements.txt .
+
+RUN pip install --upgrade pip
+
+RUN pip install psycopg2
+
+RUN pip install -r requirements.txt
+    
+# Copy all the files to the container
+COPY . .
+
+# Run the application
+CMD ["python", "app.py"]
