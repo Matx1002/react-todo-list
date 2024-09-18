@@ -10,3 +10,5 @@ To run the project using Docker, follow these steps:
 
 ```sh
 docker compose up --build -d
+```
+4. Once the containers are up and running, you can connect to the application in your browser at http://localhost:80
