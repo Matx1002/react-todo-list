@@ -36,9 +36,18 @@ const Auth = ({ setToken }) => {
             });
             login(); // Automatically log in after successful registration
         } catch (error) {
-            console.error('Registration failed', error);
+            if (error.response && error.response.status === 400 && error.response.data.msg === 'Username already exists') {
+                setSnackbarMessage('User already exists, please try a different username.');
+                setSnackbarSeverity('error');
+                setOpenSnackbar(true);
+            } else {
+                setSnackbarMessage('Registration failed, please try again.');
+                setSnackbarSeverity('error');
+                setOpenSnackbar(true);
+            }
         }
     };
+
 
     const handleCloseSnackbar = () => {
         setOpenSnackbar(false);

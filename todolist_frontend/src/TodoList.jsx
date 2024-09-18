@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, List, ListItem, ListItemText, IconButton, Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+import { TextField, Button, List, ListItem, ListItemText, IconButton, Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Checkbox } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon, ExitToApp as ExitToAppIcon } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -82,6 +82,19 @@ const TodoList = ({ token, setToken }) => {
     }
   };
 
+  const handleToggleCompletion = async (id, completed) => {
+    try {
+      await axios.put(
+          `http://127.0.0.1:5000/todos/${id}`,
+          { completed: !completed }, // Toggle completion status
+          { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTodos(todos.map(todo => (todo.id === id ? { ...todo, completed: !completed } : todo)));
+    } catch (error) {
+      console.error('Error toggling completion', error);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken(null);
@@ -116,7 +129,16 @@ const TodoList = ({ token, setToken }) => {
         <List>
           {todos.map(todo => (
               <ListItem key={todo.id}>
-                <ListItemText primary={todo.task} />
+                <Checkbox
+                    checked={todo.completed}
+                    onChange={() => handleToggleCompletion(todo.id, todo.completed)}
+                />
+                <ListItemText
+                    primary={todo.task}
+                    style={{
+                      textDecoration: todo.completed ? 'line-through' : 'none', // Cross out completed tasks
+                    }}
+                />
                 <IconButton onClick={() => startEdit(todo.id, todo.task)} color="primary">
                   <EditIcon />
                 </IconButton>

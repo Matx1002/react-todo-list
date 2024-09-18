@@ -15,7 +15,9 @@ app.config['JWT_SECRET_KEY'] = os.getenv('POSTGRES_URL')
 db.init_app(app)
 with app.app_context():
     db.create_all()
+
 jwt = JWTManager(app)
+
 
 # Protect to-do routes with JWT
 @app.route('/todos', methods=['GET', 'POST'])
@@ -32,10 +34,10 @@ def todos():
         db.session.add(new_todo)
         db.session.commit()
 
-        return jsonify({'id': new_todo.id, 'task': new_todo.task}), 201
+        return jsonify({'id': new_todo.id, 'task': new_todo.task, 'completed': new_todo.completed}), 201
 
     todos = Todo.query.filter_by(user_id=user_id).all()
-    return jsonify([{'id': todo.id, 'task': todo.task} for todo in todos]), 200
+    return jsonify([{'id': todo.id, 'task': todo.task, 'completed': todo.completed} for todo in todos]), 200
 
 
 @app.route('/todos/<int:id>', methods=['PUT'])
@@ -49,12 +51,17 @@ def update_todo(id):
 
     data = request.json
     task = data.get('task')
-    if not task:
-        return jsonify({'msg': 'Missing task'}), 400
+    completed = data.get('completed')  # Fetch the 'completed' status
 
-    todo.task = task
+    if task is not None:
+        todo.task = task
+
+    if completed is not None:
+        todo.completed = completed
+
     db.session.commit()
-    return jsonify({'id': todo.id, 'task': todo.task}), 200
+    return jsonify({'id': todo.id, 'task': todo.task, 'completed': todo.completed}), 200
+
 
 # Endpoint to delete a task
 @app.route('/todos/<int:id>', methods=['DELETE'])
@@ -69,6 +76,7 @@ def delete_todo(id):
     db.session.delete(todo)
     db.session.commit()
     return jsonify({'msg': 'Todo deleted successfully'}), 200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
